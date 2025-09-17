@@ -1,4 +1,4 @@
-package model;
+package com.example.anime_tracker.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
