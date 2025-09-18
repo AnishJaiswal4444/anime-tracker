@@ -63,32 +63,25 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
 
 ### **2. Project Structure Tree**
 ```
-┌───────────────────────────┐
-│       anime-tracker       │
-└───────────────┬───────────┘
-                │
-   ┌────────────┴────────────┐
-   ▼                         ▼
-┌───────────────┐     ┌──────────────────┐
-│   backend/    │     │   frontend/      │
-│ (Spring Boot) │     │   (Angular)      │
-└───────┬───────┘     └─────────┬────────┘
-        │                        │
-   ┌────┴─────┐          ┌───────┴────────┐
-   ▼          ▼          ▼                ▼
-┌───────┐  ┌─────────┐ ┌───────────┐  ┌─────────┐
-│controller│ │service │ │components │  │services │
-└───────┬──┘ └───┬────┘ └─────┬─────┘  └────┬────┘
-        │        │             │            │
-   ┌────┴───┐ ┌──┴─────┐   ┌───┴────┐   ┌───┴────┐
-   ▼        ▼ ▼         ▼   ▼        ▼   ▼        ▼
-┌───────┐ ┌───────┐ ┌─────────┐ ┌──────────┐ ┌─────────┐
-│ model │ │ repo  │ │ security│ │ resources│ │ models  │
-└───────┘ └───────┘ └─────────┘ └──────────┘ └─────────┘
-
-Other root files:
-- docker-compose.yml
-- README.md
+anime-tracker/
+│
+├── backend/ (Spring Boot)
+│   ├── controller/        # REST Controllers
+│   ├── service/           # Business Logic
+│   ├── model/             # Entities (User, Anime, Watchlist)
+│   ├── repository/        # JPA Repositories
+│   ├── security/          # JWT + Redis integration
+│   └── resources/
+│       └── application.yml
+│
+├── frontend/ (Angular)
+│   └── src/app/
+│       ├── components/    # UI Components
+│       ├── services/      # API Calls
+│       └── models/        # TypeScript interfaces
+│
+├── docker-compose.yml
+└── README.md
 ```
 
 
