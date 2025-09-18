@@ -54,6 +54,9 @@ flowchart LR
     Backend --> API
     Backend --> Cache
 
+    Frontend[Angular Frontend] --> Backend
+
+
 
 ## ⚙️ Tech Stack
 - **Backend:** Spring Boot (latest), Spring Security, JPA (Hibernate)  
@@ -66,13 +69,9 @@ flowchart LR
 ---
 
 
-### **2. Project Structure Tree**
-
-```markdown
-```mermaid
 mindmap
   root((anime-tracker))
-    backend(Sprint Boot Backend)
+    backend(Spring Boot Backend)
       controller(REST Controllers)
       service(Business Logic)
       model(Entities: User, Anime, Watchlist)
