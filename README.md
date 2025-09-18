@@ -35,6 +35,7 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
                             │         │
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
+
 ```mermaid
 flowchart LR
     subgraph DB[PostgreSQL Database]
@@ -42,7 +43,7 @@ flowchart LR
         L[UserAnimeList]
     end
 
-    subgraph API[Jikan API (v4)]
+    subgraph API[Jikan API]
         A[Anime info source]
         E[Upcoming episodes]
     end
