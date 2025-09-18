@@ -36,28 +36,14 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
 
-```mermaid
-flowchart LR
-    subgraph DB[PostgreSQL Database]
-        U[Users]
-        L[UserAnimeList]
-    end
+Angular Frontend
+        │
+        ▼
+Spring Boot Backend
+   ├── PostgreSQL Database (Users, UserAnimeList)
+   ├── Redis Cache (JWT tokens)
+   └── Jikan API (Anime info, Upcoming episodes)
 
-    subgraph API[Jikan API (v4)]
-        A[Anime info source]
-        E[Upcoming episodes]
-    end
-
-    subgraph Cache[Redis (Session Cache)]
-        T[JWT tokens storage]
-    end
-
-    Backend[Spring Boot Backend] --> DB
-    Backend --> API
-    Backend --> Cache
-
-
-```
 
 ## ⚙️ Tech Stack
 - **Backend:** Spring Boot (latest), Spring Security, JPA (Hibernate)  
@@ -71,25 +57,26 @@ flowchart LR
 
 ### **2. Project Structure Tree**
 
-```mermaid
-mindmap
-  root((anime-tracker))
-    backend(Spring Boot Backend)
-      controller(REST Controllers)
-      service(Business Logic)
-      model(Entities: User, Anime, Watchlist)
-      repository(JPA Repositories)
-      security(JWT + Redis integration)
-      resources
-        yml(application.yml)
-    frontend(Angular Frontend)
-      src(src/app)
-        components(UI Components)
-        services(API Calls)
-        models(TypeScript Interfaces)
-    docker(docker-compose.yml)
-    readme(README.md)
-```
+anime-tracker/
+│
+├── backend/ (Spring Boot)
+│   ├── controller/        # REST Controllers
+│   ├── service/           # Business Logic
+│   ├── model/             # Entities (User, Anime, Watchlist)
+│   ├── repository/        # JPA Repositories
+│   ├── security/          # JWT + Redis integration
+│   └── resources/
+│       └── application.yml
+│
+├── frontend/ (Angular)
+│   └── src/app/
+│       ├── components/    # UI Components
+│       ├── services/      # API Calls
+│       └── models/        # TypeScript interfaces
+│
+├── docker-compose.yml
+└── README.md
+
 
 
 ---
