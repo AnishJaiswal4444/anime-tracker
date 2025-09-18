@@ -35,16 +35,26 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
                             │         │
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
-┌─────────────────────┐                     ┌─────────────────────┐
-│ Jikan API (v4)      │                     │ PostgreSQL Database │
-│ • Users             │                     │ • Anime info source │
-│ • Upcoming episodes │                     │ • UserAnimeList     │
-└─────────────────────┘                     └─────────────────────┘
+```mermaid
+flowchart LR
+    subgraph DB[PostgreSQL Database]
+        U[Users]
+        L[UserAnimeList]
+    end
 
-┌──────────────────────┐
-│ Redis (Session Cache)│
-│ • JWT tokens storage │
-└──────────────────────┘
+    subgraph API[Jikan API (v4)]
+        A[Anime info source]
+        E[Upcoming episodes]
+    end
+
+    subgraph Cache[Redis (Session Cache)]
+        T[JWT tokens storage]
+    end
+
+    Backend[Spring Boot Backend] --> DB
+    Backend --> API
+    Backend --> Cache
+
 
 ## ⚙️ Tech Stack
 - **Backend:** Spring Boot (latest), Spring Security, JPA (Hibernate)  
@@ -56,25 +66,29 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
 
 ---
 
-## 📂 Project Structure
-anime-tracker/
-│── backend/ (Spring Boot)
-│ ├── controller/ # REST Controllers
-│ ├── service/ # Business Logic
-│ ├── model/ # Entities (User, Anime, Watchlist)
-│ ├── repository/ # JPA Repositories
-│ ├── security/ # JWT + Redis integration
-│ └── resources/
-│ └── application.yml
-│
-│── frontend/ (Angular)
-│ ├── src/app/
-│ │ ├── components/ # UI Components
-│ │ ├── services/ # API Calls
-│ │ └── models/ # TypeScript interfaces
-│
-│── docker-compose.yml
-│── README.md
+
+### **2. Project Structure Tree**
+
+```markdown
+```mermaid
+mindmap
+  root((anime-tracker))
+    backend(Sprint Boot Backend)
+      controller(REST Controllers)
+      service(Business Logic)
+      model(Entities: User, Anime, Watchlist)
+      repository(JPA Repositories)
+      security(JWT + Redis integration)
+      resources
+        yml(application.yml)
+    frontend(Angular Frontend)
+      src(src/app)
+        components(UI Components)
+        services(API Calls)
+        models(TypeScript Interfaces)
+    docker(docker-compose.yml)
+    readme(README.md)
+
 
 
 ---
