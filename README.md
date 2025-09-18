@@ -68,10 +68,12 @@ flowchart LR
 
 ---
 
+### **2. Project Structure Tree**
 
+```mermaid
 mindmap
   root((anime-tracker))
-    backend(Spring Boot Backend)
+    backend(Sprint Boot Backend)
       controller(REST Controllers)
       service(Business Logic)
       model(Entities: User, Anime, Watchlist)
@@ -86,7 +88,7 @@ mindmap
         models(TypeScript Interfaces)
     docker(docker-compose.yml)
     readme(README.md)
-
+```
 
 
 ---
