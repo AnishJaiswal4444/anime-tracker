@@ -35,25 +35,7 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
                             │         │
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
-
-                   ┌─────────────────────────┐
-                   │        Angular UI       │
-                   │ (Anime Tracker Frontend)│
-                   └─────────────┬───────────┘
-                                 │  (REST API calls)
-                                 ▼
-                    ┌───────────────────────────┐
-                    │     Spring Boot Backend   │
-                    │ ──────────────────────── │
-                    │  • Controllers            │
-                    │  • Services               │
-                    │  • Security (JWT + Redis) │
-                    │  • Repositories (JPA)     │
-                    └───────┬─────────┬────────┘
-                            │         │
-                            │         │
-           ┌────────────────┘         └────────────────┐
-           ▼                                           ▼
+```
 ┌───────────────────────────┐           ┌───────────────────────────┐
 │   PostgreSQL Database     │           │     Redis Cache           │
 │  • Users                  │           │  • JWT token storage      │
@@ -67,6 +49,7 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
 │  • Upcoming episodes      │
 └───────────────────────────┘
 
+```
 
 ## ⚙️ Tech Stack
 - **Backend:** Spring Boot (latest), Spring Security, JPA (Hibernate)  
@@ -79,26 +62,34 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
 ---
 
 ### **2. Project Structure Tree**
+```
+┌───────────────────────────┐
+│       anime-tracker       │
+└───────────────┬───────────┘
+                │
+   ┌────────────┴────────────┐
+   ▼                         ▼
+┌───────────────┐     ┌──────────────────┐
+│   backend/    │     │   frontend/      │
+│ (Spring Boot) │     │   (Angular)      │
+└───────┬───────┘     └─────────┬────────┘
+        │                        │
+   ┌────┴─────┐          ┌───────┴────────┐
+   ▼          ▼          ▼                ▼
+┌───────┐  ┌─────────┐ ┌───────────┐  ┌─────────┐
+│controller│ │service │ │components │  │services │
+└───────┬──┘ └───┬────┘ └─────┬─────┘  └────┬────┘
+        │        │             │            │
+   ┌────┴───┐ ┌──┴─────┐   ┌───┴────┐   ┌───┴────┐
+   ▼        ▼ ▼         ▼   ▼        ▼   ▼        ▼
+┌───────┐ ┌───────┐ ┌─────────┐ ┌──────────┐ ┌─────────┐
+│ model │ │ repo  │ │ security│ │ resources│ │ models  │
+└───────┘ └───────┘ └─────────┘ └──────────┘ └─────────┘
 
-anime-tracker/
-│
-├── backend/ (Spring Boot)
-│   ├── controller/        # REST Controllers
-│   ├── service/           # Business Logic
-│   ├── model/             # Entities (User, Anime, Watchlist)
-│   ├── repository/        # JPA Repositories
-│   ├── security/          # JWT + Redis integration
-│   └── resources/
-│       └── application.yml
-│
-├── frontend/ (Angular)
-│   └── src/app/
-│       ├── components/    # UI Components
-│       ├── services/      # API Calls
-│       └── models/        # TypeScript interfaces
-│
-├── docker-compose.yml
-└── README.md
+Other root files:
+- docker-compose.yml
+- README.md
+```
 
 
 
