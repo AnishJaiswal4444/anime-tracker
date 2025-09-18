@@ -35,6 +35,7 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
                             │         │
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
+```mermaid
 flowchart LR
     subgraph DB[PostgreSQL Database]
         U[Users]
@@ -54,9 +55,7 @@ flowchart LR
     Backend --> API
     Backend --> Cache
 
-    Frontend[Angular Frontend] --> Backend
-
-
+```
 
 ## ⚙️ Tech Stack
 - **Backend:** Spring Boot (latest), Spring Security, JPA (Hibernate)  
