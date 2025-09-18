@@ -43,7 +43,7 @@ flowchart LR
         L[UserAnimeList]
     end
 
-    subgraph API[Jikan API]
+    subgraph API[Jikan API (v4)]
         A[Anime info source]
         E[Upcoming episodes]
     end
@@ -55,6 +55,7 @@ flowchart LR
     Backend[Spring Boot Backend] --> DB
     Backend --> API
     Backend --> Cache
+
 
 ```
 
@@ -73,7 +74,7 @@ flowchart LR
 ```mermaid
 mindmap
   root((anime-tracker))
-    backend(Sprint Boot Backend)
+    backend(Spring Boot Backend)
       controller(REST Controllers)
       service(Business Logic)
       model(Entities: User, Anime, Watchlist)
