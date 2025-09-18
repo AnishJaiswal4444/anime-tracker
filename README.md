@@ -35,7 +35,6 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
                             │         │
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
-```mermaid
 flowchart LR
     subgraph DB[PostgreSQL Database]
         U[Users]
