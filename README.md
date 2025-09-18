@@ -36,13 +36,36 @@ It integrates with the **[Jikan API](https://docs.api.jikan.moe/)** (unofficial 
            ┌────────────────┘         └───────────────┐
            ▼                                          ▼
 
-Angular Frontend
-        │
-        ▼
-Spring Boot Backend
-   ├── PostgreSQL Database (Users, UserAnimeList)
-   ├── Redis Cache (JWT tokens)
-   └── Jikan API (Anime info, Upcoming episodes)
+                   ┌─────────────────────────┐
+                   │        Angular UI       │
+                   │ (Anime Tracker Frontend)│
+                   └─────────────┬───────────┘
+                                 │  (REST API calls)
+                                 ▼
+                    ┌───────────────────────────┐
+                    │     Spring Boot Backend   │
+                    │ ──────────────────────── │
+                    │  • Controllers            │
+                    │  • Services               │
+                    │  • Security (JWT + Redis) │
+                    │  • Repositories (JPA)     │
+                    └───────┬─────────┬────────┘
+                            │         │
+                            │         │
+           ┌────────────────┘         └────────────────┐
+           ▼                                           ▼
+┌───────────────────────────┐           ┌───────────────────────────┐
+│   PostgreSQL Database     │           │     Redis Cache           │
+│  • Users                  │           │  • JWT token storage      │
+│  • UserAnimeList          │           └───────────────────────────┘
+└───────────────────────────┘
+           │
+           ▼
+┌───────────────────────────┐
+│     Jikan API (v4)        │
+│  • Anime info source      │
+│  • Upcoming episodes      │
+└───────────────────────────┘
 
 
 ## ⚙️ Tech Stack
