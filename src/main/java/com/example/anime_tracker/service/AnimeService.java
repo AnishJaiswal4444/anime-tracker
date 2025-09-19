@@ -1,29 +1,42 @@
 package com.example.anime_tracker.service;
 
+import com.example.anime_tracker.dto.AnimeDTO;
 import com.example.anime_tracker.model.Anime;
+import com.example.anime_tracker.model.Genre;
 import com.example.anime_tracker.model.JikanResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class AnimeService {
+
     private final RestTemplate restTemplate;
+    private final RedisTemplate<String, List<AnimeDTO>> redisTemplate;
+
     private static final String API_BASE_URL = "https://api.jikan.moe/v4/seasons/upcoming";
-    private static final LocalDateTime CURRENT_DATE = LocalDateTime.of(2025, 9, 17, 0, 0);
+    private static final String REDIS_KEY = "upcoming_anime";
 
     @Autowired
-    public AnimeService(RestTemplate restTemplate) {
+    public AnimeService(RestTemplate restTemplate, RedisTemplate<String, List<AnimeDTO>> redisTemplate) {
         this.restTemplate = restTemplate;
+        this.redisTemplate = redisTemplate;
     }
 
-    public JikanResponse getUpcomingEpisodes() {
-        List<Anime> allAnime = new ArrayList<>();
-        JikanResponse finalResponse = new JikanResponse();
+    public List<AnimeDTO> getUpcomingEpisodes() {
+
+        List<AnimeDTO> cached = redisTemplate.opsForValue().get(REDIS_KEY);
+        if (cached != null && !cached.isEmpty()) return cached;
+
+        List<AnimeDTO> result = new ArrayList<>();
         int page = 1;
         boolean hasNextPage = true;
 
@@ -32,42 +45,44 @@ public class AnimeService {
             JikanResponse response = restTemplate.getForObject(url, JikanResponse.class);
 
             if (response != null && response.getData() != null) {
-                // Filter anime for upcoming (air date after current date or null)
-                List<Anime> filteredAnime = response.getData().stream()
+                List<AnimeDTO> filtered = response.getData().stream()
                         .filter(anime -> {
-                            String airedFrom = anime.getAired() != null ? anime.getAired().getFrom() : null;
-                            if (airedFrom == null) {
-                                return true; // Include anime with no air date (TBA)
-                            }
-                            try {
-                                LocalDateTime airDate = LocalDateTime.parse(airedFrom.replace("Z", ""));
-                                return airDate.isAfter(CURRENT_DATE);
-                            } catch (Exception e) {
-                                return true; // Include if parsing fails (treat as TBA)
-                            }
+                            // anime.getAiredFrom() is LocalDate now
+                            LocalDate d = anime.getAiredFrom();
+                            return d == null || d.isAfter(LocalDate.now());
                         })
-                        .toList();
+                        .map(this::mapToDTO)
+                        .collect(Collectors.toList());
 
-                allAnime.addAll(filteredAnime);
-
-                // Update pagination metadata from the last response
-                finalResponse.setPagination(response.getPagination());
-                hasNextPage = response.getPagination().isHasNextPage();
+                result.addAll(filtered);
+                hasNextPage = response.getPagination() != null && response.getPagination().isHasNextPage();
                 page++;
 
-                // Respect Jikan API rate limit (3 requests/second)
-                try {
-                    Thread.sleep(1000); // 1-second delay
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            } else {
-                break;
-            }
+                try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+            } else break;
         }
 
-        finalResponse.setData(allAnime);
-        return finalResponse;
+        redisTemplate.opsForValue().set(REDIS_KEY, result, 10, TimeUnit.MINUTES);
+        return result;
+    }
+
+    private AnimeDTO mapToDTO(Anime anime) {
+        AnimeDTO dto = new AnimeDTO();
+        dto.setTitleEnglish(anime.getTitleEnglish() != null ? anime.getTitleEnglish() : anime.getTitle());
+        dto.setStatus(anime.getStatus());
+        dto.setImageUrl(anime.getImageUrl());
+
+        if (anime.getAiredFrom() != null) {
+            dto.setAiredFrom(anime.getAiredFrom().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        }
+
+        if (anime.getGenres() != null && !anime.getGenres().isEmpty()) {
+            String genreNames = anime.getGenres().stream()
+                    .map(Genre::getName)
+                    .collect(Collectors.joining(", "));
+            dto.setGenres(genreNames);
+        }
+
+        return dto;
     }
 }
