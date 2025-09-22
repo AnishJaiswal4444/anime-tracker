@@ -1,29 +1,42 @@
 package com.example.anime_tracker.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(name = "user_anime_list")
 public class UserAnimeList {
-    @Id
-    private Long id;
-    @ManyToOne
-    private User user;
-    @ManyToOne
-    private Anime anime;
-    private String status; // WATCHING, COMPLETED, PLAN_TO_WATCH
-    private String addedDate;
 
-    // Getters and setters
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name; // e.g., "Watching", "Completed"
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_anime_list_anime",
+            joinColumns = @JoinColumn(name = "user_anime_list_id"),
+            inverseJoinColumns = @JoinColumn(name = "anime_id")
+    )
+    private Set<Anime> animes = new HashSet<>();
+
+    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-    public Anime getAnime() { return anime; }
-    public void setAnime(Anime anime) { this.anime = anime; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getAddedDate() { return addedDate; }
-    public void setAddedDate(String addedDate) { this.addedDate = addedDate; }
+
+    public Set<Anime> getAnimes() { return animes; }
+    public void setAnimes(Set<Anime> animes) { this.animes = animes; }
 }

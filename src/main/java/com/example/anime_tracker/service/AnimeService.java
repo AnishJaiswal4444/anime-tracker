@@ -4,6 +4,7 @@ import com.example.anime_tracker.dto.AnimeDTO;
 import com.example.anime_tracker.model.Anime;
 import com.example.anime_tracker.model.Genre;
 import com.example.anime_tracker.model.JikanResponse;
+import com.example.anime_tracker.repository.AnimeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,18 +22,23 @@ public class AnimeService {
 
     private final RestTemplate restTemplate;
     private final RedisTemplate<String, List<AnimeDTO>> redisTemplate;
+    private final AnimeRepository animeRepository;
 
     private static final String API_BASE_URL = "https://api.jikan.moe/v4/seasons/upcoming";
     private static final String REDIS_KEY = "upcoming_anime";
 
     @Autowired
-    public AnimeService(RestTemplate restTemplate, RedisTemplate<String, List<AnimeDTO>> redisTemplate) {
+    public AnimeService(RestTemplate restTemplate,
+                        RedisTemplate<String, List<AnimeDTO>> redisTemplate,
+                        AnimeRepository animeRepository) {
         this.restTemplate = restTemplate;
         this.redisTemplate = redisTemplate;
+        this.animeRepository = animeRepository;
     }
 
     public List<AnimeDTO> getUpcomingEpisodes() {
 
+        // 1️⃣ Check Redis cache first
         List<AnimeDTO> cached = redisTemplate.opsForValue().get(REDIS_KEY);
         if (cached != null && !cached.isEmpty()) return cached;
 
@@ -45,9 +51,16 @@ public class AnimeService {
             JikanResponse response = restTemplate.getForObject(url, JikanResponse.class);
 
             if (response != null && response.getData() != null) {
+
+                // Save Anime to DB
+                for (Anime anime : response.getData()) {
+                    if (!animeRepository.existsById(anime.getMalId())) {
+                        animeRepository.save(anime);
+                    }
+                }
+
                 List<AnimeDTO> filtered = response.getData().stream()
                         .filter(anime -> {
-                            // anime.getAiredFrom() is LocalDate now
                             LocalDate d = anime.getAiredFrom();
                             return d == null || d.isAfter(LocalDate.now());
                         })
@@ -62,7 +75,9 @@ public class AnimeService {
             } else break;
         }
 
+        // Cache the result for 10 minutes
         redisTemplate.opsForValue().set(REDIS_KEY, result, 10, TimeUnit.MINUTES);
+
         return result;
     }
 
