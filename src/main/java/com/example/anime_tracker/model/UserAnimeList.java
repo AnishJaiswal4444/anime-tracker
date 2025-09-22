@@ -1,23 +1,24 @@
 package com.example.anime_tracker.model;
 
 import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "user_anime_list")
+@Table(name = "user_anime_lists")
 public class UserAnimeList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // e.g., "Watching", "Completed"
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ListType listType;
 
     @ManyToMany
     @JoinTable(
@@ -27,16 +28,19 @@ public class UserAnimeList {
     )
     private Set<Anime> animes = new HashSet<>();
 
-    // Getters & Setters
+    // Constructors
+    public UserAnimeList() {}
+    public UserAnimeList(User user, ListType listType) {
+        this.user = user;
+        this.listType = listType;
+    }
+
+    // Getters and Setters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-
+    public ListType getListType() { return listType; }
+    public void setListType(ListType listType) { this.listType = listType; }
     public Set<Anime> getAnimes() { return animes; }
     public void setAnimes(Set<Anime> animes) { this.animes = animes; }
 }

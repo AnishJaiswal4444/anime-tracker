@@ -1,14 +1,13 @@
 package com.example.anime_tracker.service;
 
+import com.example.anime_tracker.dto.AnimeDTO;
 import com.example.anime_tracker.dto.UserAnimeListDTO;
-import com.example.anime_tracker.model.Anime;
-import com.example.anime_tracker.model.User;
-import com.example.anime_tracker.model.UserAnimeList;
+import com.example.anime_tracker.model.*;
 import com.example.anime_tracker.repository.AnimeRepository;
 import com.example.anime_tracker.repository.UserAnimeListRepository;
 import com.example.anime_tracker.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -17,47 +16,58 @@ import java.util.stream.Collectors;
 @Service
 public class UserAnimeListService {
 
-    @Autowired
-    private UserAnimeListRepository userAnimeListRepository;
+    private final UserRepository userRepository;
+    private final UserAnimeListRepository userAnimeListRepository;
+    private final AnimeRepository animeRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private AnimeRepository animeRepository;
-
-    public List<UserAnimeListDTO> getListsForUser(Long userId) {
-        return userAnimeListRepository.findByUserId(userId)
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public UserAnimeListService(UserRepository userRepository,
+                                UserAnimeListRepository userAnimeListRepository,
+                                AnimeRepository animeRepository) {
+        this.userRepository = userRepository;
+        this.userAnimeListRepository = userAnimeListRepository;
+        this.animeRepository = animeRepository;
     }
 
-    public UserAnimeListDTO createList(Long userId, String name) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        UserAnimeList list = new UserAnimeList();
-        list.setName(name);
-        list.setUser(user);
-        UserAnimeList saved = userAnimeListRepository.save(list);
-        return toDTO(saved);
+    @Transactional
+    public void createDefaultListsForUser(User user) {
+        for (ListType type : ListType.values()) {
+            UserAnimeList list = new UserAnimeList(user, type);
+            userAnimeListRepository.saveAndFlush(list);
+        }
     }
 
-    public UserAnimeListDTO addAnimeToList(Long listId, Long animeId) {
-        UserAnimeList list = userAnimeListRepository.findById(listId)
+    @Transactional
+    public void addAnimeToList(Long userId, Long animeId, ListType listType) {
+        UserAnimeList list = userAnimeListRepository.findByUser_IdAndListType(userId, listType)
                 .orElseThrow(() -> new RuntimeException("List not found"));
+
         Anime anime = animeRepository.findById(animeId)
                 .orElseThrow(() -> new RuntimeException("Anime not found"));
+
         list.getAnimes().add(anime);
         userAnimeListRepository.save(list);
-        return toDTO(list);
+    }
+    @Transactional(readOnly = true)
+    public Set<AnimeDTO> getAnimeForList(Long userId, ListType listType) {
+        UserAnimeList list = userAnimeListRepository
+                .findByUser_IdAndListType(userId, listType)
+                .orElseThrow(() -> new RuntimeException("List not found"));
+        return list.getAnimes().stream()
+                .map(anime -> {
+                    AnimeDTO dto = new AnimeDTO();
+                    dto.setTitleEnglish(anime.getTitle());  // assuming title field in Anime entity
+                    dto.setImageUrl(anime.getImageUrl());      // assuming image field in Anime entity
+                    // leave other fields null for now or populate if needed
+                    return dto;
+                })
+                .collect(Collectors.toSet()); // returns full Anime objects
     }
 
     private UserAnimeListDTO toDTO(UserAnimeList list) {
         UserAnimeListDTO dto = new UserAnimeListDTO();
         dto.setId(list.getId());
-        dto.setName(list.getName());
-        Set<Long> animeIds = list.getAnimes().stream().map(Anime::getMalId).collect(Collectors.toSet());
-        dto.setAnimeIds(animeIds);
+        dto.setName(list.getListType().name());
+        dto.setAnimeIds(list.getAnimes().stream().map(anime -> anime.getMalId()).collect(Collectors.toSet()));
         return dto;
     }
 }
